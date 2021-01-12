@@ -1,0 +1,15 @@
+#PBS -l walltime=02:00:00
+#PBS -l nodes=1:ppn=1
+#PBS -A PAS1532
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+cd ../
+
+cd reference
+module load hisat2
+hisat2-build IS.fa IS
+
+cd ../alignments
+hisat2 -x ../reference/IS -1 ecoli_paired_unaligned_concord10.fq.1.gz -2 ecoli_paired_unaligned_concord10.fq.2.gz -S IS_hisat2_10.sam --un-gz IS_unpaired_unaligned10.fq.gz --al-gz IS_unpaired_aligned10.fq.gz --un-conc-gz IS_paired_unaligned_concord10.fq.gz --al-conc-gz IS_paired_aligned10.fq.gz --summary-file IS_summary_10.txt
+hisat2 -x ../reference/IS -1 ecoli_paired_unaligned_concord70.fq.1.gz -2 ecoli_paired_unaligned_concord70.fq.2.gz -S IS_hisat2_70.sam --un-gz IS_unpaired_unaligned70.fq.gz --al-gz IS_unpaired_aligned70.fq.gz --un-conc-gz IS_paired_unaligned_concord70.fq.gz --al-conc-gz IS_paired_aligned70.fq.gz --summary-file IS_summary_70.txt
