@@ -1,0 +1,37 @@
+#PBS -l walltime=03:00:00
+#PBS -l nodes=1:ppn=1
+#PBS -A PAS1792
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+cd ../
+mkdir alignments
+mkdir reference
+cd reference
+
+#get pm-rk genome
+curl -o pmrk_temp.txt http://nebenfuehrlab.utk.edu/markers/OMS/pm-rk.gb
+sed 's/ //g' pmrk_temp.txt | sed -E 's/^[0-9]+//' > pm-rk_temp2.txt
+grep -E '^[atgc]{3}' pm-rk_temp2.txt > pm-rk_temp3.txt
+echo '>chr1' > header_temp.txt
+cat header_temp.txt pm-rk_temp3.txt > pm-rk.fa
+rm *temp*
+
+#get Ecoli genome
+curl -o MDS42.fa.gz -L https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/GCF_000005845.2_ASM584v2_genomic.fna.gz
+gunzip MDS42.fa.gz
+
+#get IS seqs "genome"
+curl -o IS.fa -L https://github.com/mikesovic/Brkljacic_etal/raw/master/refs/IS_seqs.fa
+
+cat MDS42.fa IS.fa pm-rk.fa > combined_temp.fa
+sed -E 's/>NC_020518.+/>MDS42/' combined_temp.fa > combined_temp2.fa 
+sed 's/>chr1/\n>chr1/' combined_temp2.fa > combined.fa
+rm combined_temp*
+cd ..
+
+module load hisat2
+hisat2-build reference/combined.fa reference/combined
+
+hisat2 -x reference/combined -1 trimmed_fastq/RK10_S2_L001_1P.fastq.gz -2 trimmed_fastq/RK10_S2_L001_2P.fastq.gz -S alignments/combined_hisat2_10.sam --un-conc-gz alignments/combined_paired_unaligned_concord10.fq.gz --al-conc-gz alignments/combined_paired_aligned10.fq.gz --summary-file alignments/combined_summary_10.txt --rg-id gen10 --rg SM:gen10
+hisat2 -x reference/combined -1 trimmed_fastq/RK70_S1_L001_1P.fastq.gz -2 trimmed_fastq/RK70_S1_L001_2P.fastq.gz -S alignments/combined_hisat2_70.sam --un-conc-gz alignments/combined_paired_unaligned_concord70.fq.gz --al-conc-gz alignments/combined_paired_aligned70.fq.gz --summary-file alignments/combined_summary_70.txt --rg-id gen70 --rg SM:gen70
