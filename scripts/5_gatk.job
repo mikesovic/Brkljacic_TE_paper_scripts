@@ -1,0 +1,25 @@
+#PBS -l walltime=03:00:00
+#PBS -l nodes=1:ppn=1
+#PBS -A PAS1792
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+cd ../
+mkdir genotypes
+
+module load picard
+java -jar $PICARD CreateSequenceDictionary R=reference/combined.fa O=reference/combined.dict
+
+cd picard_out
+java -jar $PICARD BuildBamIndex I=combined_hisat2_10.sorted.bam
+java -jar $PICARD BuildBamIndex I=combined_hisat2_70.sorted.bam
+cd ../
+
+module load samtools
+cd reference
+samtools faidx combined.fa
+cd ../
+
+module load gatk/4.1.2.0
+gatk HaplotypeCaller -ploidy 2 -I picard_out/combined_hisat2_10.sorted.bam -R reference/combined.fa -O genotypes/combined_10_dip.vcf
+gatk HaplotypeCaller -ploidy 2 -I picard_out/combined_hisat2_70.sorted.bam -R reference/combined.fa -O genotypes/combined_70_dip.vcf

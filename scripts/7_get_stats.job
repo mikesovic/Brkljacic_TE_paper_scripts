@@ -1,0 +1,43 @@
+#PBS -l walltime=02:00:00
+#PBS -l nodes=1:ppn=1
+#PBS -A PAS1792
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+
+cd ../alignments
+
+module load samtools
+
+echo "alignment stats for gen70 unique alignments" > gen70_final_summary.txt
+echo "" >> gen70_final_summary.txt
+echo "unique alignments to Ecoli MDS42: `samtools view uniq_hisat2_70_sorted.bam NC_000913.3 | wc -l`" >> gen70_final_summary.txt
+echo "unique alignments to pm-rk: `samtools view uniq_hisat2_70_sorted.bam chr1 | wc -l`" >> gen70_final_summary.txt
+
+(
+for i in IS1A IS1b IS1D IS1F IS2 IS3 IS4 IS5 IS5b IS5d IS5y IS10R IS30D IS150 IS186A IS186B IS911 Tn1000
+do
+echo "unique alignments to ${i}: `samtools view uniq_hisat2_70_sorted.bam ${i} | wc -l`"
+done
+) >> gen70_final_summary.txt
+
+echo "" >> gen70_final_summary.txt
+echo "" >> gen70_final_summary.txt
+echo `samtools flagstat uniq_hisat2_70_sorted.bam` >> gen70_final_summary.txt
+
+
+echo "alignment stats for gen10 unique alignments" > gen10_final_summary.txt
+echo "" >> gen10_final_summary.txt
+echo "unique alignments to Ecoli MDS42: `samtools view uniq_hisat2_10_sorted.bam NC_000913.3 | wc -l`" >> gen10_final_summary.txt
+echo "unique alignments to pm-rk: `samtools view uniq_hisat2_10_sorted.bam chr1 | wc -l`" >> gen10_final_summary.txt
+
+(
+for i in IS1A IS1b IS1D IS1F IS2 IS3 IS4 IS5 IS5b IS5d IS5y IS10R IS30D IS150 IS186A IS186B IS911 Tn1000
+do
+echo "unique alignments to ${i}: `samtools view uniq_hisat2_10_sorted.bam ${i} | wc -l`"
+done
+) >> gen10_final_summary.txt
+
+echo "" >> gen10_final_summary.txt
+echo "" >> gen10_final_summary.txt
+echo `samtools flagstat uniq_hisat2_10_sorted.bam` >> gen10_final_summary.txt

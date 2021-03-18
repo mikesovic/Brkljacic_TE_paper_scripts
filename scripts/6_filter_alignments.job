@@ -1,0 +1,19 @@
+#PBS -l walltime=02:00:00
+#PBS -l nodes=1:ppn=4
+#PBS -A PAS1792
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+
+cd ../alignments
+
+module load samtools
+
+samtools view -q 60 -o uniq_hisat2_10.bam combined_hisat2_10.sam
+samtools view -q 60 -o uniq_hisat2_70.bam combined_hisat2_70.sam
+
+samtools sort -o uniq_hisat2_10_sorted.bam uniq_hisat2_10.bam
+samtools sort -o uniq_hisat2_70_sorted.bam uniq_hisat2_70.bam
+
+samtools index uniq_hisat2_10_sorted.bam
+samtools index uniq_hisat2_70_sorted.bam

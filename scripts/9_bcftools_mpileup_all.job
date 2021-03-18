@@ -1,0 +1,22 @@
+#SBATCH -t 08:00:00
+#SBATCH --nodes=1 --ntasks-per-node 1
+#SBATCH --job-name=bcftools_mpileup
+#SBATCH --account PAS1884
+
+
+cd $SLURM_SUBMIT_DIR
+
+module load samtools
+module load bcftools
+
+#get the variant calls from mpileup/call
+~/software/bcftools-1.11/bcftools mpileup -f reference/pm-rk.fa -Ov picard_out/hisat2_10.sorted.bam | bcftools call -mv > gen10_bcftools_mpileup.vcf
+~/software/bcftools-1.11/bcftools mpileup -f reference/pm-rk.fa -Ov picard_out/hisat2_70.sorted.bam | bcftools call -mv > gen70_bcftools_mpileup.vcf
+
+#now get just the mpileup output
+~/software/bcftools-1.11/bcftools mpileup -a FORMAT/AD,INFO/AD -f reference/pm-rk.fa -Ov picard_out/hisat2_10.sorted.bam > gen10_bcftools_pileup.txt
+~/software/bcftools-1.11/bcftools mpileup -a FORMAT/AD,INFO/AD -f reference/pm-rk.fa -Ov picard_out/hisat2_70.sorted.bam > gen70_bcftools_pileup.txt 
+
+#now get counts for the alt allele for each position from the pileup file
+grep -v '^#' gen10_bcftools_pileup.txt | sed -E 's/(.+)(AD=)(.+?,)(.+)(;I16)(.+?)(;.+)/\4/' | sort | uniq -c > gen10_pileup_alt_allele_counts.txt
+grep -v '^#' gen70_bcftools_pileup.txt | sed -E 's/(.+)(AD=)(.+?,)(.+)(;I16)(.+?)(;.+)/\4/' | sort | uniq -c > gen70_pileup_alt_allele_counts.txt
